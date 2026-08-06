@@ -26,8 +26,8 @@ Application en ligne de commande de gestion de tâches, écrite en **Dart pur** 
 ## Installation
 
 ```bash
-git clone https://github.com/Eliezozo/task-manager-dart.git
-cd task-manager-dart
+git clone https://github.com/Eliezozo/FlutterFireSummerDartProject.git
+cd FlutterFireSummerDartProject
 dart pub get
 ```
 
@@ -37,11 +37,6 @@ dart pub get
 dart run
 ```
 
-Ou avec un fichier de données personnalisé :
-
-```bash
-dart run bin/task_manager.dart /chemin/vers/mes_taches.json
-```
 
 ### Menu interactif
 
@@ -81,6 +76,10 @@ lib/
     cli/                       # Menu interactif
 test/task_manager_test.dart    # Tests unitaires
 data/tasks.json                # Créé automatiquement à l'exécution
+```
+```
+made by Eliezozo. 
+
 ```
 
 ## Licence
