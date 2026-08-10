@@ -120,5 +120,25 @@ void main() {
       );
       expect(task.isOverdue, isFalse);
     });
+
+    test('toString omet l\'échéance si dueDate est null', () {
+      final task = RegularTask(
+        id: '5',
+        title: 'Sans date',
+        priority: Priority.low,
+      );
+      expect(task.toString(), isNot(contains('échéance')));
+      expect(task.toString(), contains('Sans date'));
+    });
+
+    test('toString formate dueDate en yyyy-MM-dd', () {
+      final task = RegularTask(
+        id: '6',
+        title: 'Avec date',
+        priority: Priority.low,
+        dueDate: DateTime(2026, 8, 10),
+      );
+      expect(task.toString(), contains('échéance: 2026-08-10'));
+    });
   });
 }

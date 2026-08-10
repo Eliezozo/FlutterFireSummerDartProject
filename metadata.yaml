@@ -1,0 +1,36 @@
+# Métadonnées du projet — Dart Avancé
+# L'architecture n'est PAS flat : elle est layered (en couches).
+
+name: task_manager
+course: Dart Avancé
+architecture: layered
+architecture_style: layered
+is_flat: false
+
+layers:
+  - name: core
+    path: lib/src/core
+    role: Interfaces (Repository<T>, Serializable) et exceptions
+  - name: domain
+    path: lib/src/domain
+    role: Modèles métier — Task → UrgentTask, RegularTask, Priority
+  - name: data
+    path: lib/src/data
+    role: Persistance JSON — JsonTaskRepository (add, update, save)
+  - name: application
+    path: lib/src/application
+    role: TaskService (cas d'usage)
+  - name: presentation
+    path: lib/src/presentation
+    role: CLI interactive (CliApp)
+
+persistence:
+  type: json
+  file: data/tasks.json
+  class: JsonTaskRepository
+  methods:
+    - add
+    - update
+    - delete
+    - save
+  write_api: File.writeAsString

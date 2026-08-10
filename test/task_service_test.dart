@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:task_manager/task_manager.dart';
 
@@ -100,6 +103,31 @@ void main() {
       final b = await service.addTask(title: 'B');
       expect(a.id, '1');
       expect(b.id, '2');
+    });
+  });
+
+  group('TaskService + JsonTaskRepository (ids persistés)', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('task_ids_test_');
+    });
+
+    tearDown(() async {
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('le prochain id reprend après rechargement du JSON', () async {
+      final filePath = p.join(tempDir.path, 'tasks.json');
+      final first = TaskService(JsonTaskRepository(filePath: filePath));
+      await first.addTask(title: 'Existante');
+      await first.addTask(title: 'Deuxième');
+
+      final reloaded = TaskService(JsonTaskRepository(filePath: filePath));
+      final next = await reloaded.addTask(title: 'Nouvelle');
+      expect(next.id, '3');
     });
   });
 }

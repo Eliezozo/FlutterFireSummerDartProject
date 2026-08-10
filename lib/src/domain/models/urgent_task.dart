@@ -48,7 +48,8 @@ class UrgentTask extends Task {
 
   @override
   String toString() {
-    final note = urgencyNote != null ? ' — note: $urgencyNote' : '';
-    return '${super.toString()}$note';
+    final note = urgencyNote;
+    final noteLabel = (note == null || note.isEmpty) ? '' : ' — note: $note';
+    return '${super.toString()}$noteLabel';
   }
 }

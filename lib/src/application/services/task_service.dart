@@ -9,10 +9,10 @@ import '../../domain/models/urgent_task.dart';
 /// Service métier pour la gestion des tâches.
 ///
 /// Dépend uniquement de `Repository<Task>` (inversion de dépendance) :
-/// mémoire, JSON, ou toute autre implémentation.
+/// `JsonTaskRepository` (fichier JSON) ou `InMemoryRepository<Task>`.
 class TaskService {
   final Repository<Task> _repository;
-  int _idCounter = 0;
+  int? _idCounter;
 
   TaskService(this._repository);
 
@@ -90,20 +90,22 @@ class TaskService {
     return task;
   }
 
+  /// Génère le prochain id en s'alignant sur le max déjà persisté (JSON).
   Future<String> _nextId() async {
+    _idCounter ??= await _maxPersistedId();
+    _idCounter = _idCounter! + 1;
+    return '$_idCounter';
+  }
+
+  Future<int> _maxPersistedId() async {
     final existing = await _repository.findAll();
-    if (existing.isEmpty && _idCounter == 0) {
-      _idCounter = 1;
-      return '1';
-    }
-    var maxId = _idCounter;
+    var maxId = 0;
     for (final t in existing) {
       final parsed = int.tryParse(t.id);
       if (parsed != null && parsed > maxId) {
         maxId = parsed;
       }
     }
-    _idCounter = maxId + 1;
-    return '$_idCounter';
+    return maxId;
   }
 }

@@ -3,7 +3,9 @@
 .dart_tool/
 .packages
 build/
-data/
 .idea/
 .vscode/
 *.iml
+
+# Fichier JSON runtime (l'exemple versionné reste data/tasks.example.json)
+data/tasks.json

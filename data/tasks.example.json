@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Récolter le cacao",
+      "priority": "medium",
+      "dueDate": "2026-09-01T00:00:00.000",
+      "isCompleted": false,
+      "createdAt": "2026-08-01T10:00:00.000",
+      "type": "RegularTask"
+    },
+    {
+      "id": "2",
+      "title": "Irrigation en panne",
+      "priority": "high",
+      "dueDate": null,
+      "isCompleted": false,
+      "createdAt": "2026-08-02T08:00:00.000",
+      "type": "UrgentTask",
+      "urgencyNote": "Pompe HS"
+    }
+  ]
+}

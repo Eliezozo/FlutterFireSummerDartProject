@@ -138,5 +138,48 @@ void main() {
         throwsA(isA<InvalidTaskException>()),
       );
     });
+
+    test('add écrit le JSON sur disque via save / writeAsString', () async {
+      await repository.add(
+        RegularTask(id: '1', title: 'Semis', priority: Priority.medium),
+      );
+      final contents = await File(repository.filePath).readAsString();
+      expect(contents, contains('"title": "Semis"'));
+      expect(contents, contains('"tasks"'));
+      expect(contents, contains('"version": 1'));
+    });
+
+    test('update persiste la modification dans le fichier JSON', () async {
+      final task = RegularTask(
+        id: '1',
+        title: 'Ancien titre',
+        priority: Priority.low,
+      );
+      await repository.add(task);
+      task.title = 'Nouveau titre';
+      task.complete();
+      await repository.update(task);
+
+      final reloaded = JsonTaskRepository(filePath: repository.filePath);
+      final found = await reloaded.findById('1');
+      expect(found, isNotNull);
+      expect(found!.title, 'Nouveau titre');
+      expect(found.isCompleted, isTrue);
+
+      final contents = await File(repository.filePath).readAsString();
+      expect(contents, contains('Nouveau titre'));
+    });
+
+    test('save réécrit explicitement le fichier JSON', () async {
+      await repository.add(
+        RegularTask(id: '1', title: 'A', priority: Priority.low),
+      );
+      await repository.save();
+      expect(File(repository.filePath).existsSync(), isTrue);
+      expect(
+        await File(repository.filePath).readAsString(),
+        contains('"id": "1"'),
+      );
+    });
   });
 }

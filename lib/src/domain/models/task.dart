@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import '../../core/interfaces/persistable.dart';
 import 'priority.dart';
 
@@ -63,14 +65,12 @@ abstract class Task implements Persistable {
   @override
   String toString() {
     final status = isCompleted ? '✓' : '○';
-    final due = dueDate != null ? ' | échéance: ${_formatDate(dueDate!)}' : '';
+    final deadline = dueDate;
+    final dueLabel = deadline == null
+        ? ''
+        : ' | échéance: ${DateFormat('yyyy-MM-dd').format(deadline)}';
     final overdue = isOverdue ? ' [EN RETARD]' : '';
     return '[$status] $displayLabel #$id — $title '
-        '(${priority.name})$due$overdue';
+        '(${priority.name})$dueLabel$overdue';
   }
-
-  static String _formatDate(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
-      '${d.month.toString().padLeft(2, '0')}-'
-      '${d.day.toString().padLeft(2, '0')}';
 }

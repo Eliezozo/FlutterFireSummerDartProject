@@ -75,10 +75,10 @@ void main() {
       expect(sorted.map((n) => n.text).toList(), ['A', 'B', 'C']);
     });
 
-    test('save est un no-op sans erreur', () async {
+    test('save persiste un snapshot mémoire', () async {
       await notes.add(_Note(id: 'n1', text: 'Ok'));
-      await notes.save();
-      expect(await notes.findAll(), hasLength(1));
+      expect(notes.persistedSnapshot, hasLength(1));
+      expect(notes.persistedSnapshot.first.text, 'Ok');
     });
   });
 }

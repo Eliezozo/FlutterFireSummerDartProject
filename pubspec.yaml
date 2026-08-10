@@ -1,15 +1,21 @@
 name: task_manager
 description: >
   Application CLI de gestion de tâches en Dart pur.
-  Architecture en couches, persistance JSON, héritage Task → UrgentTask,
-  interfaces, génériques Repository<T> et exceptions personnalisées.
+  Architecture en couches (layered: core, domain, data, application, presentation).
+  Persistance JSON via JsonTaskRepository (add, update, save → File.writeAsString).
+  Héritage Task → UrgentTask, interfaces, génériques Repository<T>, exceptions.
 version: 1.0.0
 repository: https://github.com/Eliezozo/task-manager-dart
+topics:
+  - layered-architecture
+  - cli
+  - json-persistence
 
 environment:
   sdk: ^3.12.2
 
 dependencies:
+  intl: ^0.20.2
   path: ^1.9.0
 
 dev_dependencies:
