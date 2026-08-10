@@ -2,6 +2,8 @@ import 'priority.dart';
 import 'task.dart';
 
 /// Tâche standard (priorité low ou medium).
+///
+/// Complète la hiérarchie aux côtés de `Task → UrgentTask`.
 class RegularTask extends Task {
   RegularTask({
     required super.id,

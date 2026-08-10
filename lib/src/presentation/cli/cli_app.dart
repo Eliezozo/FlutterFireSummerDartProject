@@ -1,22 +1,15 @@
-import 'dart:io' as io;
-
-import '../exceptions/task_exceptions.dart';
-import '../models/priority.dart';
-import '../repositories/json_task_repository.dart';
-import '../services/task_service.dart';
+import '../../application/services/task_service.dart';
+import '../../core/errors/task_exceptions.dart';
+import '../../domain/models/priority.dart';
+import '../../domain/models/sort_by.dart';
+import 'console_io.dart';
 
 /// Application CLI interactive de gestion de tâches.
 class CliApp {
-  final TaskService _service;
-  final io.Stdin _stdin;
-  final io.Stdout _stdout;
+  final TaskService service;
+  final ConsoleIo _io;
 
-  CliApp({
-    required this._service,
-    io.Stdin? stdin,
-    io.Stdout? stdout,
-  })  : _stdin = stdin ?? io.stdin,
-        _stdout = stdout ?? io.stdout;
+  CliApp({required this.service, ConsoleIo? io}) : _io = io ?? StdConsoleIo();
 
   /// Boucle principale du menu.
   Future<void> run() async {
@@ -47,10 +40,20 @@ class CliApp {
           default:
             _println('Option invalide. Choisissez 1–5.');
         }
+      } on TaskNotFoundException catch (e) {
+        _println('Introuvable: ${e.message}');
+      } on InvalidTaskException catch (e) {
+        _println('Données invalides: ${e.message}');
+      } on PersistenceException catch (e) {
+        _println('Erreur de sauvegarde: ${e.message}');
+      } on CliArgumentException catch (e) {
+        _println('Saisie incorrecte: ${e.message}');
+      } on FormatException catch (e) {
+        _println('Format incorrect: ${e.message}');
       } on TaskException catch (e) {
         _println('Erreur: ${e.message}');
-      } on FormatException catch (e) {
-        _println('Erreur: ${e.message}');
+      } catch (e) {
+        _println('Erreur inattendue: $e');
       }
       if (running) _println('');
     }
@@ -74,14 +77,21 @@ class CliApp {
 
     final priorityRaw =
         _readLine('Priorité (low / medium / high) [medium]') ?? 'medium';
-    final priorityInput =
-        priorityRaw.trim().isEmpty ? 'medium' : priorityRaw.trim();
+    final priorityInput = priorityRaw.trim().isEmpty
+        ? 'medium'
+        : priorityRaw.trim();
     final priority = Priority.fromString(priorityInput);
 
     final dueRaw = _readLine('Date limite (YYYY-MM-DD, optionnel)');
     DateTime? dueDate;
     if (dueRaw != null && dueRaw.trim().isNotEmpty) {
-      dueDate = DateTime.parse(dueRaw.trim());
+      try {
+        dueDate = DateTime.parse(dueRaw.trim());
+      } on FormatException {
+        throw const CliArgumentException(
+          'Date invalide. Utilisez le format YYYY-MM-DD.',
+        );
+      }
     }
 
     String? urgencyNote;
@@ -92,7 +102,7 @@ class CliApp {
       }
     }
 
-    final task = await _service.addTask(
+    final task = await service.addTask(
       title: title,
       priority: priority,
       dueDate: dueDate,
@@ -104,15 +114,15 @@ class CliApp {
   Future<void> _listTasks() async {
     final sortRaw =
         _readLine('Trier par (priority / date / created) [priority]') ??
-            'priority';
+        'priority';
     final sortKey = sortRaw.trim().isEmpty ? 'priority' : sortRaw.trim();
     final sortBy = switch (sortKey.toLowerCase()) {
       'date' || 'duedate' || 'due' => SortBy.dueDate,
       'created' || 'createdat' => SortBy.createdAt,
       'priority' => SortBy.priority,
       _ => throw CliArgumentException(
-          'Tri invalide: "$sortKey". Utilisez: priority, date, created.',
-        ),
+        'Tri invalide: "$sortKey". Utilisez: priority, date, created.',
+      ),
     };
 
     await _displayTasks(sortBy: sortBy);
@@ -121,7 +131,7 @@ class CliApp {
   /// Affiche la liste des tâches enregistrées.
   /// Retourne `false` s'il n'y a aucune tâche.
   Future<bool> _displayTasks({SortBy sortBy = SortBy.priority}) async {
-    final tasks = await _service.listTasks(sortBy: sortBy);
+    final tasks = await service.listTasks(sortBy: sortBy);
     if (tasks.isEmpty) {
       _println('Aucune tâche pour le moment.');
       return false;
@@ -142,7 +152,7 @@ class CliApp {
     if (id == null || id.trim().isEmpty) {
       throw const CliArgumentException('L\'ID est obligatoire.');
     }
-    final task = await _service.completeTask(id.trim());
+    final task = await service.completeTask(id.trim());
     _println('Tâche terminée: $task');
   }
 
@@ -155,14 +165,11 @@ class CliApp {
     if (id == null || id.trim().isEmpty) {
       throw const CliArgumentException('L\'ID est obligatoire.');
     }
-    await _service.deleteTask(id.trim());
+    await service.deleteTask(id.trim());
     _println('Tâche id: $id supprimée.');
   }
 
-  String? _readLine(String prompt) {
-    _stdout.write('$prompt: ');
-    return _stdin.readLineSync();
-  }
+  String? _readLine(String prompt) => _io.readLine(prompt);
 
-  void _println(String message) => _stdout.writeln(message);
+  void _println(String message) => _io.writeln(message);
 }

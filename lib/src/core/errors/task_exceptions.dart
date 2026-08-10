@@ -1,4 +1,8 @@
 /// Exception de base pour toutes les erreurs liées aux tâches.
+///
+/// Toutes les exceptions métier héritent de [TaskException] afin
+/// que la couche présentation puisse les distinguer et les afficher
+/// avec un message adapté.
 abstract class TaskException implements Exception {
   final String message;
 
@@ -13,10 +17,11 @@ class TaskNotFoundException extends TaskException {
   final String taskId;
 
   const TaskNotFoundException(this.taskId)
-      : super('Tâche introuvable: $taskId');
+    : super('Tâche introuvable: $taskId');
 }
 
-/// Levée lorsque le titre d'une tâche est invalide.
+/// Levée lorsque les données d'une tâche sont invalides
+/// (titre vide, déjà terminée, id dupliqué, etc.).
 class InvalidTaskException extends TaskException {
   const InvalidTaskException(super.message);
 }

@@ -1,19 +1,24 @@
-import '../exceptions/task_exceptions.dart';
-import '../models/priority.dart';
-import '../models/regular_task.dart';
-import '../models/task.dart';
-import '../models/urgent_task.dart';
-import '../repositories/json_task_repository.dart';
-import '../repositories/repository.dart';
+import '../../core/errors/task_exceptions.dart';
+import '../../core/interfaces/repository.dart';
+import '../../domain/models/priority.dart';
+import '../../domain/models/regular_task.dart';
+import '../../domain/models/sort_by.dart';
+import '../../domain/models/task.dart';
+import '../../domain/models/urgent_task.dart';
 
 /// Service métier pour la gestion des tâches.
+///
+/// Dépend uniquement de `Repository<Task>` (inversion de dépendance) :
+/// mémoire, JSON, ou toute autre implémentation.
 class TaskService {
   final Repository<Task> _repository;
   int _idCounter = 0;
 
   TaskService(this._repository);
 
-  /// Ajoute une tâche. Si [priority] est [Priority.high], crée une [UrgentTask].
+  /// Ajoute une tâche.
+  /// Si [priority] est [Priority.high], crée une [UrgentTask]
+  /// (`Task → UrgentTask`), sinon une [RegularTask].
   Future<Task> addTask({
     required String title,
     Priority priority = Priority.medium,
@@ -54,16 +59,8 @@ class TaskService {
   }
 
   /// Liste les tâches, éventuellement triées.
-  Future<List<Task>> listTasks({SortBy sortBy = SortBy.priority}) async {
-    final repo = _repository;
-    if (repo is JsonTaskRepository) {
-      return repo.findAllSorted(sortBy: sortBy);
-    }
-    final tasks = List<Task>.from(await repo.findAll());
-    tasks.sort(
-      (a, b) => b.priority.sortWeight.compareTo(a.priority.sortWeight),
-    );
-    return tasks;
+  Future<List<Task>> listTasks({SortBy sortBy = SortBy.priority}) {
+    return _repository.findAllSorted(compare: TaskComparators.by(sortBy));
   }
 
   /// Marque la tâche [id] comme terminée.

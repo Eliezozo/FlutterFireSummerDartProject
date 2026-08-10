@@ -1,9 +1,13 @@
 import 'priority.dart';
 import 'task.dart';
 
-/// Tâche urgente : priorité forcée à [Priority.high].
+/// Tâche urgente : spécialisation de [Task] (`Task → UrgentTask`).
 ///
-/// Hérite de [Task] et ajoute une note d'urgence optionnelle.
+/// Hérite de [Task] et surcharge le comportement :
+/// - priorité forcée à [Priority.high]
+/// - libellé `URGENT`
+/// - [isUrgent] vaut `true`
+/// - note d'urgence optionnelle [urgencyNote]
 class UrgentTask extends Task {
   /// Contexte ou raison de l'urgence.
   String? urgencyNote;
@@ -34,10 +38,13 @@ class UrgentTask extends Task {
   String get displayLabel => 'URGENT';
 
   @override
+  bool get isUrgent => true;
+
+  @override
   Map<String, dynamic> toJson() => {
-        ...super.toJson(),
-        'urgencyNote': urgencyNote,
-      };
+    ...super.toJson(),
+    'urgencyNote': urgencyNote,
+  };
 
   @override
   String toString() {

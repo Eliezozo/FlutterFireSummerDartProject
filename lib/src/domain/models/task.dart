@@ -1,11 +1,20 @@
+import '../../core/interfaces/persistable.dart';
 import 'priority.dart';
-import 'serializable.dart';
 
 /// Classe abstraite représentant une tâche.
 ///
-/// Les sous-classes concrètes ([RegularTask], [UrgentTask]) définissent
-/// le comportement spécifique (libellé, règles métier, etc.).
-abstract class Task implements Serializable {
+/// Hiérarchie d'héritage (exigence du projet) :
+/// ```
+/// Task (abstract)
+///   ├── UrgentTask   // chemin principal : Task → UrgentTask
+///   └── RegularTask  // tâche standard (priorité low / medium)
+/// ```
+///
+/// [Task] implémente l'interface [Persistable] (`Identifiable` + `Serializable`).
+/// Les sous-classes concrètes définissent le comportement polymorphique
+/// ([displayLabel], [isUrgent], sérialisation spécifique).
+abstract class Task implements Persistable {
+  @override
   final String id;
   String title;
   Priority priority;
@@ -29,8 +38,11 @@ abstract class Task implements Serializable {
     return deadline.isBefore(DateTime.now());
   }
 
-  /// Libellé d'affichage spécifique au type de tâche.
+  /// Libellé d'affichage spécifique au type de tâche (polymorphisme).
   String get displayLabel;
+
+  /// `true` uniquement pour le chemin d'héritage [Task] → `UrgentTask`.
+  bool get isUrgent => false;
 
   /// Marque la tâche comme terminée.
   void complete() {
@@ -39,21 +51,19 @@ abstract class Task implements Serializable {
 
   @override
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'priority': priority.name,
-        'dueDate': dueDate?.toIso8601String(),
-        'isCompleted': isCompleted,
-        'createdAt': createdAt.toIso8601String(),
-        'type': runtimeType.toString(),
-      };
+    'id': id,
+    'title': title,
+    'priority': priority.name,
+    'dueDate': dueDate?.toIso8601String(),
+    'isCompleted': isCompleted,
+    'createdAt': createdAt.toIso8601String(),
+    'type': runtimeType.toString(),
+  };
 
   @override
   String toString() {
     final status = isCompleted ? '✓' : '○';
-    final due = dueDate != null
-        ? ' | échéance: ${_formatDate(dueDate!)}'
-        : '';
+    final due = dueDate != null ? ' | échéance: ${_formatDate(dueDate!)}' : '';
     final overdue = isOverdue ? ' [EN RETARD]' : '';
     return '[$status] $displayLabel #$id — $title '
         '(${priority.name})$due$overdue';
